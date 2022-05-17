@@ -45,11 +45,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     string private _name;
     string private _symbol;
     uint8 public _decimals;
-    uint256 public AuctionEnd;
-    uint public currentBid;
-    address public topBidder = address(0);
-    address public TokenAddress = address(0);
-    uint public aucLength = 300; //300sec for testing mainnet//3 * 24 * 60 * 60 //3days
+ //300sec for testing mainnet//3 * 24 * 60 * 60 //3days
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
@@ -59,66 +55,24 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * All two of these values are immutable: they can only be set once during
      * construction.
      */
-    constructor(string memory name_, string memory symbol_, uint8 decimals_, address ERC20Address) {
+    constructor(string memory name_, string memory symbol_, uint8 decimals_) {
         _name = name_;
         _symbol = symbol_;
         _decimals = decimals_;
-        TokenAddress = ERC20Address;
     }
 
     /**
      * @dev Returns the name of the token.
      */
     function setVotePrice(uint Price) public virtual returns (bool success) {
-        
 
         votesTotalAmt -= votes[msg.sender] * votesPrice[msg.sender];
         votesPrice[msg.sender] = Price;
         votesTotalAmt += votes[msg.sender] * votesPrice[msg.sender];
+
         return true;
     }
 
-    function startBuyoutAuction(address bidForWhom) public payable virtual returns (bool success) {
-        require(TokenAddress == address(0), "must equal 0 address for eth vault");
-        require(msg.value > currentBid, "Must bid more than reserve price");
-        AuctionEnd = block.timestamp + aucLength; // 3 days
-        currentBid = votesTotalAmt / votesTotal;
-        bid(bidForWhom);
-        return true;
-    }
-
-    function startBuyoutAuctionERC20(address bidForWhom, uint value) public payable virtual returns (bool success) {
-        require(TokenAddress != address(0), "must equal 0 address for eth vault");
-        require(ERC20(TokenAddress).transferFrom(msg.sender, address(this), value), "transfer must work");
-        AuctionEnd = block.timestamp + aucLength; // 3 days
-        currentBid = votesTotalAmt / votesTotal;
-        bidERC20(bidForWhom);
-        return true;
-    }
-
-    function bidERC20(address bidForWhom) public payable  virtual returns (bool success) {
-        require(block.timestamp <= AuctionEnd, "Must bid before auction ends");
-        require(ERC20(TokenAddress).transferFrom(address(this), topBidder, currentBid), "Must xfer back topBid");
-        currentBid = msg.value;
-        topBidder = bidForWhom;
-        return true;
-    }
-    function bid(address bidForWhom) public payable  virtual returns (bool success) {
-        require(block.timestamp <= AuctionEnd, "Must bid before auction ends");
-        require(msg.value > currentBid, "Must bid more than reserve price");
-        address payable receive21r = payable(topBidder);
-        receive21r.transfer(currentBid);
-        currentBid = msg.value;
-        topBidder = bidForWhom;
-        return true;
-    }
-
-    function dispearseAuction(uint amount)public{
-        require(block.timestamp > AuctionEnd, "Must bid before auction ends");
-        _transfer(msg.sender, address(0), amount);
-        uint total = currentBid * amount / totalSupply();
-        ERC20(TokenAddress).transferFrom(address(this), msg.sender, total);
-    }
 
     function name() public view virtual override returns (string memory) {
         return _name;
