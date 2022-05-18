@@ -209,11 +209,13 @@ contract DaughterContract is ERC20, Ownable2 {
     uint [] public currentBid;
     address [] public topBidder;
     address public TokenAddress = address(0);
-    uint public aucLength = 300;
+    uint public aucLength = 65;
     address public TokenAboveAddress;
     uint public totalAuc = 0;
     uint public aucNum = 0;
     uint public savedTotal = 0;
+    uint [] public startAucBurn;
+    uint [] public arraySoldNFTs;
     constructor(string memory name, string memory symbol, uint8 dec, uint supply, address ownerz, uint StartBuyout) ERC20(name, symbol, dec) {
 
         _mint(ownerz, supply * 10 ** dec, StartBuyout); //buyout at 0.01 polygon for testing
@@ -247,46 +249,60 @@ contract DaughterContract is ERC20, Ownable2 {
 
     function send_NFTs_To_winner(uint aucWin, uint TokenID)public {
         require(msg.sender == topBidder[aucWin], "Must have won auction");
-        require(AuctionEnd[aucWin] > block.timestamp + 1, "After block is overwith");
+        require(address(address(this)) != topBidder[aucWin], "No self claiming thing");
+        require(AuctionEnd[aucWin]  + 1 < block.timestamp, "After block is overwith");
+        nftaddress.approve(msg.sender, TokenID);
         nftaddress.transferFrom(address(this), msg.sender, TokenID);
+        topBidder[aucWin] = address(this);
+        arraySoldNFTs.push(TokenID);
     }
 
 
     function startBuyoutAuction(address bidForWhom) public payable virtual returns (bool success){
+
         require(totalAuc>0, "Must have an NFT to auction");
-        require(AuctionEnd[aucNum] + 2 * 24 * 60 * 60 > block.timestamp, "No auctions within same 2 day period");
+        if(aucNum > 1){
+            require(AuctionEnd[aucNum - 1]  > block.timestamp, "No auctions within same period");
+        }
         require(TokenAddress == address(0), "must equal 0 address for eth vault");
         require(msg.value >= votesTotalAmt / votesTotal, "Must bid more than reserve price");
-        currentBid.push(votesTotalAmt / votesTotal);
+        currentBid.push(msg.value);
         AuctionEnd.push(block.timestamp + aucLength); // 3 days
         topBidder.push(bidForWhom);
+        startAucBurn.push(totalSupply() - IERC20(address(this)).balanceOf(address(this)));
         aucNum++;
         totalAuc--;
+
         return true;
+
     }
 
-    function startBuyoutAuctionERC20(address bidForWhom, uint value) public payable virtual returns (bool success) {
+    function startBuyoutAuctionERC20(address bidForWhom, uint value) public virtual returns (bool success) {
 
         require(totalAuc>0, "Must have an NFT to auction");
         require(TokenAddress != address(0), "must equal 0 address for eth vault");
         require(ERC20(TokenAddress).transferFrom(msg.sender, address(this), value), "transfer must work");
-        require(AuctionEnd[aucNum] + 2 * 24 * 60 * 60 > block.timestamp, "No auctions within same 2 day period");
-        AuctionEnd.push(block.timestamp + aucLength); // 3 days
+        if(aucNum > 1){
+            require(AuctionEnd[aucNum] > block.timestamp, "No auctions within same period");
+        }
+        AuctionEnd.push(block.timestamp + aucLength); // //aucLength is time of auction
         currentBid.push(votesTotalAmt / votesTotal);
         topBidder.push(bidForWhom);
+        startAucBurn.push(totalSupply() - IERC20(address(this)).balanceOf(address(this)));
         aucNum++;
         totalAuc--;
         return true;
     }
 
 
-    function bidERC20(address bidForWhom, uint aucNumber, uint value) public payable  virtual returns (bool success) {
+    function bidERC20(address bidForWhom, uint aucNumber, uint value) public  virtual returns (bool success) {
 
         require(block.timestamp <= AuctionEnd[aucNumber], "Must bid before auction ends");
+        require(value > currentBid[aucNumber], "Must bid more than reserve price");
         require(ERC20(TokenAddress).transferFrom(address(this), topBidder[aucNumber], currentBid[aucNumber]), "Must xfer back topBid");
         currentBid[aucNumber] = value;
         topBidder[aucNumber] = bidForWhom;
-
+        startAucBurn[aucNumber] =totalSupply() - IERC20(address(this)).balanceOf(address(this));
         return true;
     }
 
@@ -299,33 +315,59 @@ contract DaughterContract is ERC20, Ownable2 {
         receive21r.transfer(currentBid[aucNumber]);
         currentBid[aucNumber] = msg.value;
         topBidder[aucNumber] = bidForWhom;
-
+        startAucBurn[aucNumber] =totalSupply() - IERC20(address(this)).balanceOf(address(this));
         return true;
 
     }
 
 
-    function getAuctionTotals(uint [] memory aucNumbers)public{
+    function getAuctionTotals(uint amount, uint [] memory aucNumbers)public view returns(uint total){
         uint Bigtotal = 0;
-        for(uint x =0; x< aucNumbers.length; x++){
-            require(block.timestamp > AuctionEnd[aucNumbers[x]], "Must bid before auction ends");
+        uint botTotal = 0;
+        uint x =0;
+        for(x =0; x< aucNumbers.length; x++){
+            if(block.timestamp < AuctionEnd[aucNumbers[x]]){
+                break;
+            }
             Bigtotal += currentBid[aucNumbers[x]];
+            botTotal += startAucBurn[aucNumbers[x]];
         }
-        require(Bigtotal > savedTotal, "Must save dispersed");
-        savedTotal = Bigtotal;
+        return amount * Bigtotal / (botTotal / (x));
     }
 
+    function buyForERC(uint amount, uint TokenID) public {
+        require(totalAuc >= 1,"Must have NFT to sell");
+        require( (totalSupply() - IERC20(address(this)).balanceOf(address(this))) / (totalAuc + aucNum) <= amount, "Must be greater than the totalSupply divided by total number of NFTs");
+        IERC20(address(this)).transferFrom(msg.sender, address(this), amount);
+        nftaddress.approve(msg.sender, TokenID);
+        nftaddress.transferFrom(address(this), msg.sender, TokenID);
+        arraySoldNFTs.push(TokenID);
+        totalAuc--;
+    }
+
+
     function dispenseAuction(uint amount)public{
-        _transfer(msg.sender, address(this), amount);
+        IERC20(address(this)).transferFrom(msg.sender, address(this), amount);
+        uint out = estimator(amount);
         if(TokenAddress != address(0)){
-            IERC20(TokenAddress).transferFrom(address(this), msg.sender, amount * savedTotal / totalSupply());
+            IERC20(TokenAddress).transferFrom(address(this), msg.sender, out);
         }else{
             address payable receive21r = payable(msg.sender);
-            receive21r.transfer(amount * savedTotal / totalSupply());
+            receive21r.transfer(out);
+            
         }
     }
     
     function estimator(uint amount) public view returns (uint amt){
-        return (amount * savedTotal) / totalSupply();
+        uint[] memory aucNu = new uint[](aucNum);
+        uint x=0;
+        for(x=0; x<aucNum; x++){
+            if(block.timestamp <= AuctionEnd[x]){
+                break;
+            }
+            aucNu[x] = (x);
+        }
+        uint out = getAuctionTotals(amount, aucNu);
+        return out;
     }
 }
