@@ -65,7 +65,8 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * @dev Returns the name of the token.
      */
     function setVotePrice(uint Price) public virtual returns (bool success) {
-
+        require(Price < votesTotalAmt / votesTotal * 10, "Price must be at under 10x than current Price");
+        require(Price > votesTotalAmt / votesTotal / 10, "Price must be at least 1/10th current Price");
         votesTotalAmt -= votes[msg.sender] * votesPrice[msg.sender];
         votesPrice[msg.sender] = Price;
         votesTotalAmt += votes[msg.sender] * votesPrice[msg.sender];
@@ -262,14 +263,14 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         if(votesPrice[to] != 0){
             votesTotalAmt += amount * votesPrice[to];
         }else{
-            votesPrice[to] = votesTotalAmt / (votesTotal - amount);
+            votesPrice[to] = votesPrice[from];
             votesTotalAmt += amount * votesPrice[to];
         }
+        if(to == address(this)){
+            votesTotal -= amount;
+            votesTotalAmt -= amount * votesPrice[to];
+        }
         
-
-
-
-
         emit Transfer(from, to, amount);
 
         _afterTokenTransfer(from, to, amount);
