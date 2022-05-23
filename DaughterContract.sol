@@ -222,7 +222,16 @@ contract DaughterContract is ERC20, Ownable2 {
 
     }
 
+    function lastAuctionWin(address didTheyWin) public view returns (int auctionWon){
+        for(uint x=aucNum - 1; x >= 0; x--){
+            if(topBidder[x] == didTheyWin ){
+                return int(x);
+            }
+        }
 
+        return -1;
+
+    }
     function Admin_TokenAddress(address NFT, uint TokenID) public {
         require(!init, "only set NFT once");
         init = true;
