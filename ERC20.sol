@@ -38,11 +38,14 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     mapping(address => mapping(address => uint256)) private _allowances;
 
     uint256 private _totalSupply;
-
+    uint public votesTotalAmt = 0;
+    uint public votesTotal = 0;
+    mapping(address => uint) public votes;
+    mapping(address => uint) public votesPrice;
     string private _name;
     string private _symbol;
     uint8 public _decimals;
-
+ //300sec for testing mainnet//3 * 24 * 60 * 60 //3days
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
@@ -61,6 +64,17 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     /**
      * @dev Returns the name of the token.
      */
+    function setVotePrice(uint Price) public virtual returns (bool success) {
+        require(Price <= votesTotalAmt / votesTotal * 15, "Price must be at under 10x than current Price");
+        require(Price >= votesTotalAmt / votesTotal / 15, "Price must be at least 1/10th current Price");
+        votesTotalAmt -= votes[msg.sender] * votesPrice[msg.sender];
+        votesPrice[msg.sender] = Price;
+        votesTotalAmt += votes[msg.sender] * votesPrice[msg.sender];
+
+        return true;
+    }
+
+
     function name() public view virtual override returns (string memory) {
         return _name;
     }
@@ -242,6 +256,21 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         }
         _balances[to] += amount;
 
+
+        votes[from] = votes[from] - amount;
+        votes[to] = votes[to] + amount;
+        votesTotalAmt -= amount * votesPrice[from];
+        if(votesPrice[to] != 0){
+            votesTotalAmt += amount * votesPrice[to];
+        }else{
+            votesPrice[to] = votesPrice[from];
+            votesTotalAmt += amount * votesPrice[to];
+        }
+        if(to == address(this)){
+            votesTotal -= amount;
+            votesTotalAmt -= amount * votesPrice[to];
+        }
+        
         emit Transfer(from, to, amount);
 
         _afterTokenTransfer(from, to, amount);
@@ -256,15 +285,18 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      *
      * - `account` cannot be the zero address.
      */
-    function _mint(address account, uint256 amount) internal virtual {
+    function _mint(address account, uint256 amount, uint256 price) internal virtual {
         require(account != address(0), "ERC20: mint to the zero address");
 
         _beforeTokenTransfer(address(0), account, amount);
-
+        
         _totalSupply += amount;
         _balances[account] += amount;
         emit Transfer(address(0), account, amount);
-
+        votes[account] = votes[account] + amount;
+        votesTotalAmt += amount * price;
+        votesPrice[account]= price;
+        votesTotal = votesTotal + amount;
         _afterTokenTransfer(address(0), account, amount);
     }
 
@@ -280,6 +312,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - `account` must have at least `amount` tokens.
      */
     function _burn(address account, uint256 amount) internal virtual {
+        
+        votes[account] = votes[account] - amount;
+        votesTotalAmt -= amount * votesPrice[account];
+        
+        votesTotal = votesTotal - amount;
         require(account != address(0), "ERC20: burn from the zero address");
 
         _beforeTokenTransfer(account, address(0), amount);
