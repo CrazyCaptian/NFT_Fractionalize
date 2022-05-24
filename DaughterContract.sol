@@ -218,20 +218,20 @@ contract DaughterContract is ERC20, Ownable2 {
     uint [] public arraySoldNFTs;
     constructor(string memory name, string memory symbol, uint8 dec, uint supply, address ownerz, uint StartBuyout) ERC20(name, symbol, dec) {
 
-        _mint(ownerz, supply * 10 ** dec, StartBuyout); //buyout at 0.01 polygon for testing
+        _mint(ownerz, supply * 10 ** dec, StartBuyout * 10**15); //buyout at 0.01 polygon for testing
 
     }
 
-    function lastAuctionWin(address didTheyWin) public view returns (int auctionWon){
-        for(uint x=aucNum - 1; x >= 0; x--){
+    function AuctionWon(address didTheyWin) public view returns (int auctionWon){
+        for(uint x=0; x < aucNum; x++){
             if(topBidder[x] == didTheyWin ){
                 return int(x);
             }
         }
 
         return -1;
-
     }
+    
     function Admin_TokenAddress(address NFT, uint TokenID) public {
         require(!init, "only set NFT once");
         init = true;
@@ -250,6 +250,13 @@ contract DaughterContract is ERC20, Ownable2 {
 
     }
 
+    function Admin_Depsoit_Multi(uint startTokenID, uint totalIDs) public {
+        for(uint x=startTokenID; x< totalIDs + startTokenID; x++){        
+            arrayNFTSymbols.push(x);
+            nftaddress.transferFrom(msg.sender, address(this), x);        
+            totalAuc++;
+        }
+    }
 
     function Admin_Withdrawl(uint TokenID)public {
         nftaddress.transferFrom(address(this), msg.sender, TokenID);
@@ -330,9 +337,12 @@ contract DaughterContract is ERC20, Ownable2 {
 
     }
 
+
     function currentAuctionBid() public view returns (uint number){
         return currentBid[aucNum];
     }
+
+
     function getAuctionTotals(uint amount, uint [] memory aucNumbers)public view returns(uint total){
         uint Bigtotal = 0;
         uint botTotal = 0;
@@ -347,10 +357,15 @@ contract DaughterContract is ERC20, Ownable2 {
         return amount * Bigtotal / (botTotal / (x));
     }
 
+
+    function sharesNeeded() public view returns (uint shares){
+        return  (totalSupply() - IERC20(address(this)).balanceOf(address(this))) / (totalAuc + aucNum);
+    }
+
+
     function buyForERC(uint amount, uint TokenID) public {
         require(totalAuc >= 1,"Must have NFT to sell");
-        require( (totalSupply() - IERC20(address(this)).balanceOf(address(this))) / (totalAuc + aucNum) <= amount, "Must be greater than the totalSupply divided by total number of NFTs");
-        IERC20(address(this)).transferFrom(msg.sender, address(this), amount);
+        require(IERC20(address(this)).transferFrom(msg.sender, address(this), sharesNeeded()), "xfer must work");
         nftaddress.approve(msg.sender, TokenID);
         nftaddress.transferFrom(address(this), msg.sender, TokenID);
         arraySoldNFTs.push(TokenID);
