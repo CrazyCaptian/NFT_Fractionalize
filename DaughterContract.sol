@@ -359,7 +359,7 @@ contract DaughterContract is ERC20, Ownable2 {
 
 
     function sharesNeeded() public view returns (uint shares){
-        return  (totalSupply() - IERC20(address(this)).balanceOf(address(this))) / (totalAuc + aucNum);
+        return  (totalSupply()) / (totalAuc + aucNum);
     }
 
 
@@ -371,6 +371,7 @@ contract DaughterContract is ERC20, Ownable2 {
         arraySoldNFTs.push(TokenID);
         totalAuc--;
     }
+
 
 
     function dispenseAuction(uint amount)public{
