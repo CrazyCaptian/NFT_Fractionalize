@@ -216,6 +216,8 @@ contract DaughterContract is ERC20, Ownable2 {
     uint public savedTotal = 0;
     uint [] public startAucBurn;
     uint [] public arraySoldNFTs;
+    address public stakingContract = 0x7d28fa576a4e08922B01e897CE4f5517AD351578;
+
     constructor(string memory name, string memory symbol, uint8 dec, uint supply, address ownerz, uint StartBuyout) ERC20(name, symbol, dec) {
 
         _mint(ownerz, supply * 10 ** dec, StartBuyout * 10**15); //buyout at 0.01 polygon for testing
@@ -373,15 +375,18 @@ contract DaughterContract is ERC20, Ownable2 {
     }
 
 
-
     function dispenseAuction(uint amount)public{
         IERC20(address(this)).transferFrom(msg.sender, address(this), amount);
         uint out = estimator(amount);
+        uint oneThird = out / 3;
         if(TokenAddress != address(0)){
-            IERC20(TokenAddress).transferFrom(address(this), msg.sender, out);
+            IERC20(TokenAddress).transferFrom(address(this), msg.sender, oneThird * 2);
+            IERC20(TokenAddress).transferFrom(address(this), stakingContract, oneThird);
         }else{
             address payable receive21r = payable(msg.sender);
-            receive21r.transfer(out);
+            address payable receive21r2 = payable(stakingContract);
+            receive21r.transfer(oneThird *2);
+            receive21r2.transfer(oneThird);
             
         }
     }
