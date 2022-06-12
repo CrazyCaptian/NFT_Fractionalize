@@ -208,7 +208,7 @@ contract DaughterContract is ERC20, Ownable2 {
     uint256 [] public AuctionEnd;
     uint [] public currentBid;
     address [] public topBidder;
-    address public TokenAddress = address(0);
+    address public TokenAddress = address(0xbF4493415fD1E79DcDa8cD0cAd7E5Ed65DCe7074);
     uint public aucLength = 65;
     address public TokenAboveAddress;
     uint public totalAuc = 0;
@@ -259,6 +259,7 @@ contract DaughterContract is ERC20, Ownable2 {
             totalAuc++;
         }
     }
+
 
     function Admin_Withdrawl(uint TokenID)public {
         nftaddress.transferFrom(address(this), msg.sender, TokenID);
@@ -318,6 +319,7 @@ contract DaughterContract is ERC20, Ownable2 {
 
         require(block.timestamp <= AuctionEnd[aucNum], "Must bid before auction ends");
         require(value > currentBid[aucNum], "Must bid more than reserve price");
+        require(ERC20(TokenAddress).transferFrom(msg.sender, address(this), value), "transfer must work");
         require(ERC20(TokenAddress).transferFrom(address(this), topBidder[aucNum], currentBid[aucNum]), "Must xfer back topBid");
         currentBid[aucNum] = value;
         topBidder[aucNum] = bidForWhom;
