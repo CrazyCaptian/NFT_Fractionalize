@@ -2,10 +2,6 @@ pragma solidity ^0.8.0;
 import "./IERC165.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-/**
- * @dev Interface of the ERC20 standard as defined in the EIP.
- */
-
 
 contract Ownable2 {
     address public owner;
@@ -213,6 +209,7 @@ contract DaughterContract is ERC20, Ownable2 {
     address public TokenAboveAddress;
     uint public totalAuc = 0;
     uint public aucNum = 0;
+    uint public buyoutNum = 0;
     uint public savedTotal = 0;
     uint [] public startAucBurn;
     uint [] public arraySoldNFTs;
@@ -226,7 +223,7 @@ contract DaughterContract is ERC20, Ownable2 {
 
     function AuctionWon(address didTheyWin) public view returns (int auctionWon){
         for(uint x=0; x < aucNum; x++){
-            if(topBidder[x] == didTheyWin ){
+            if(topBidder[x] == didTheyWin && AuctionEnd[x] < block.timestamp ){
                 return int(x);
             }
         }
@@ -296,11 +293,17 @@ contract DaughterContract is ERC20, Ownable2 {
 
     }
 
+    function reservePrice() public view returns (uint amtz) {
 
+        return votesTotalAmt / votesTotal;
+    }
+
+    
     function startBuyoutAuctionERC20(address bidForWhom, uint value) public virtual returns (bool success) {
 
         require(totalAuc>0, "Must have an NFT to auction");
         require(TokenAddress != address(0), "must not equal 0 address for erc20 token vault");
+        require(value >= reservePrice(), "Must bid more than reserve price");
         require(ERC20(TokenAddress).transferFrom(msg.sender, address(this), value), "transfer must work");
         if(aucNum > 1){
             require(AuctionEnd[aucNum - 1] < block.timestamp, "No auctions within same period");
@@ -363,7 +366,7 @@ contract DaughterContract is ERC20, Ownable2 {
 
 
     function sharesNeeded() public view returns (uint shares){
-        return  (totalSupply()) / (totalAuc + aucNum);
+        return  (totalSupply()) / (totalAuc + aucNum + buyoutNum);
     }
 
 
@@ -374,6 +377,7 @@ contract DaughterContract is ERC20, Ownable2 {
         nftaddress.transferFrom(address(this), msg.sender, TokenID);
         arraySoldNFTs.push(TokenID);
         totalAuc--;
+        buyoutNum++;
     }
 
 
@@ -394,6 +398,9 @@ contract DaughterContract is ERC20, Ownable2 {
     }
     
     function estimator(uint amount) public view returns (uint amt){
+        if(aucNum == 0){
+            return 0;
+        }
         uint[] memory aucNu = new uint[](aucNum);
         uint x=0;
         for(x=0; x<aucNum; x++){
