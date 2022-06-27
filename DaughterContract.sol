@@ -386,11 +386,11 @@ contract DaughterContract is ERC20, Ownable2 {
         uint out = estimator(amount);
         uint oneThird = out / 3;
         if(TokenAddress != address(0)){
-            IERC20(TokenAddress).transferFrom(address(this), msg.sender, oneThird * 2);
-            IERC20(TokenAddress).transferFrom(address(this), stakingContract, oneThird);
+            IERC20(TokenAddress).transfer(msg.sender, oneThird * 2);
+            IERC20(TokenAddress).transfer(stakingContract, oneThird);
         }else{
             address payable receive21r = payable(msg.sender);
-            address payable receive21r2 = payable(stakingContract);
+            //address payable receive21r2 = payable(stakingContract);
             receive21r.transfer(oneThird *2);
             receive21r2.transfer(oneThird);
             
