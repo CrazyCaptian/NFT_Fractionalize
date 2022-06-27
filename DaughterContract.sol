@@ -309,7 +309,7 @@ contract DaughterContract is ERC20, Ownable2 {
             require(AuctionEnd[aucNum - 1] < block.timestamp, "No auctions within same period");
         }
         AuctionEnd.push(block.timestamp + aucLength); // //aucLength is time of auction
-        currentBid.push(votesTotalAmt / votesTotal);
+        currentBid.push(value);
         topBidder.push(bidForWhom);
         startAucBurn.push(totalSupply() - IERC20(address(this)).balanceOf(address(this)));
         aucNum++;
