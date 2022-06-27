@@ -395,12 +395,11 @@ contract DaughterContract is ERC20, Ownable2 {
         return AuctionEnd[aucNum - 1];
     }
     function dispenseAuction(uint amount)public{
-        IERC20(address(this)).transferFrom(msg.sender, address(this), amount);
         uint out = estimator(amount);
         uint oneThird = out / 3;
         if(TokenAddress != address(0)){
-            IERC20(TokenAddress).transferFrom(address(this), msg.sender, oneThird * 2);
-            IERC20(TokenAddress).transferFrom(address(this), stakingContract, oneThird);
+            IERC20(TokenAddress).transfer(msg.sender, oneThird * 2);
+            IERC20(TokenAddress).transfer(stakingContract, oneThird);
         }else{
             address payable receive21r = payable(msg.sender);
             address payable receive21r2 = payable(stakingContract);
