@@ -421,7 +421,16 @@ contract DaughterContract is ERC20, Ownable2 {
             }
             aucNu[x] = (x);
         }
-        uint out = getAuctionTotals(amount, aucNu);
-        return out;
+        uint Bigtotal = 0;
+        uint botTotal = 0;
+        x =0;
+        for(x =0; x< aucNu.length; x++){
+            if(block.timestamp < AuctionEnd[aucNu[x]]){
+                break;
+            }
+            Bigtotal += currentBid[aucNu[x]];
+            botTotal += startAucBurn[aucNu[x]];
+        }
+        return amount * Bigtotal / (botTotal / (x));
     }
 }
