@@ -205,7 +205,7 @@ contract DaughterContract is ERC20, Ownable2 {
     uint [] public currentBid;
     address [] public topBidder;
     address public TokenAddress = address(0xbF4493415fD1E79DcDa8cD0cAd7E5Ed65DCe7074);
-    uint public aucLength = 65;
+    uint public aucLength = 650;
     address public TokenAboveAddress;
     uint public totalAuc = 0;
     uint public aucNum = 0;
@@ -320,13 +320,13 @@ contract DaughterContract is ERC20, Ownable2 {
 
     function bidERC20(address bidForWhom, uint value) public  virtual returns (bool success) {
 
-        require(block.timestamp <= AuctionEnd[aucNum], "Must bid before auction ends");
-        require(value > currentBid[aucNum], "Must bid more than reserve price");
+        require(block.timestamp <= AuctionEnd[aucNum - 1], "Must bid before auction ends");
+        require(value > currentBid[aucNum -1], "Must bid more than reserve price");
         require(ERC20(TokenAddress).transferFrom(msg.sender, address(this), value), "transfer must work");
-        require(ERC20(TokenAddress).transferFrom(address(this), topBidder[aucNum], currentBid[aucNum]), "Must xfer back topBid");
-        currentBid[aucNum] = value;
-        topBidder[aucNum] = bidForWhom;
-        startAucBurn[aucNum] =totalSupply() - IERC20(address(this)).balanceOf(address(this));
+        require(ERC20(TokenAddress).transfer(topBidder[aucNum -1 ], currentBid[aucNum -1]), "Must xfer back topBid");
+        currentBid[aucNum - 1] = value;
+        topBidder[aucNum - 1] = bidForWhom;
+        startAucBurn[aucNum- 1] = totalSupply() - IERC20(address(this)).balanceOf(address(this));
         return true;
     }
 
@@ -346,7 +346,17 @@ contract DaughterContract is ERC20, Ownable2 {
 
 
     function currentAuctionBid() public view returns (uint number){
-        return currentBid[aucNum];
+        if(aucNum == 0){
+            return 0;
+        }
+        return currentBid[aucNum - 1];
+    }
+
+    function currentAuctionTopBidAddress() public view returns (address user){
+        if(aucNum == 0){
+            return (address(0));
+        }
+        return topBidder[aucNum - 1];
     }
 
 
@@ -380,17 +390,20 @@ contract DaughterContract is ERC20, Ownable2 {
         buyoutNum++;
     }
 
-
+    function AuctionEndsAt() public view returns (uint endTime){
+        if(aucNum == 0){return 0;}
+        return AuctionEnd[aucNum - 1];
+    }
     function dispenseAuction(uint amount)public{
         IERC20(address(this)).transferFrom(msg.sender, address(this), amount);
         uint out = estimator(amount);
         uint oneThird = out / 3;
         if(TokenAddress != address(0)){
-            IERC20(TokenAddress).transfer(msg.sender, oneThird * 2);
-            IERC20(TokenAddress).transfer(stakingContract, oneThird);
+            IERC20(TokenAddress).transferFrom(address(this), msg.sender, oneThird * 2);
+            IERC20(TokenAddress).transferFrom(address(this), stakingContract, oneThird);
         }else{
             address payable receive21r = payable(msg.sender);
-            //address payable receive21r2 = payable(stakingContract);
+            address payable receive21r2 = payable(stakingContract);
             receive21r.transfer(oneThird *2);
             receive21r2.transfer(oneThird);
             
