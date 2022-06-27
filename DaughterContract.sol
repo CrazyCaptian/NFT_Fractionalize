@@ -281,7 +281,7 @@ contract DaughterContract is ERC20, Ownable2 {
             require(AuctionEnd[aucNum - 1]  < block.timestamp, "No auctions within same period");
         }
         require(TokenAddress == address(0), "must equal 0 address for eth vault");
-        require(msg.value >= votesTotalAmt / votesTotal, "Must bid more than reserve price");
+        require(msg.value >= votesTotalAmt  / votesTotal, "Must bid more than reserve price");
         currentBid.push(msg.value);
         AuctionEnd.push(block.timestamp + aucLength); // 3 days
         topBidder.push(bidForWhom);
@@ -295,7 +295,7 @@ contract DaughterContract is ERC20, Ownable2 {
 
     function reservePrice() public view returns (uint amtz) {
 
-        return votesTotalAmt / votesTotal;
+        return ( votesTotalAmt - IERC20(address(this)).balanceOf(address(this))  )/ votesTotal;
     }
 
     
