@@ -205,7 +205,7 @@ contract DaughterContract is ERC20, Ownable2 {
     uint [] public currentBid;
     address [] public topBidder;
     address public TokenAddress = address(0xbF4493415fD1E79DcDa8cD0cAd7E5Ed65DCe7074);
-    uint public aucLength = 650;
+    uint public aucLength = 50;
     address public TokenAboveAddress;
     uint public totalAuc = 0;
     uint public aucNum = 0;
@@ -214,10 +214,11 @@ contract DaughterContract is ERC20, Ownable2 {
     uint [] public startAucBurn;
     uint [] public arraySoldNFTs;
     address public stakingContract = 0x7d28fa576a4e08922B01e897CE4f5517AD351578;
+    uint public xyy = 0;
+    //constructor(string memory name, string memory symbol, uint8 dec, uint supply, address ownerz, uint StartBuyout) ERC20(name, symbol, dec) {
+    constructor() ERC20("TestFract", "TF", 0) {  
 
-    constructor(string memory name, string memory symbol, uint8 dec, uint supply, address ownerz, uint StartBuyout) ERC20(name, symbol, dec) {
-
-        _mint(ownerz, supply * 10 ** dec, StartBuyout * 10**15); //buyout at 0.01 polygon for testing
+        _mint(address(0x5798659253A33D32723a88EcBe5eF37BB8332D5D), 320000 * 10 ** 0, 100 * 10**15); //buyout at 0.01 polygon for testing
 
     }
 
@@ -231,13 +232,15 @@ contract DaughterContract is ERC20, Ownable2 {
         return -1;
     }
     
-    function Admin_TokenAddress(address NFT, uint TokenID) public {
+    function Admin_TokenAddress(address NFT, uint startTokenID, uint totalIDs) public {
         require(!init, "only set NFT once");
         init = true;
         nftaddress = IERC721(NFT);
-        nftaddress.transferFrom(msg.sender, address(this), TokenID);
-        arrayNFTSymbols.push(TokenID);
-        totalAuc++;
+        for(uint x=startTokenID; x< totalIDs + startTokenID; x++){        
+            arrayNFTSymbols.push(x);
+            nftaddress.transferFrom(msg.sender, address(this), x);        
+            totalAuc++;
+        }
 
     }
 
@@ -305,7 +308,7 @@ contract DaughterContract is ERC20, Ownable2 {
         require(TokenAddress != address(0), "must not equal 0 address for erc20 token vault");
         require(value >= reservePrice(), "Must bid more than reserve price");
         require(ERC20(TokenAddress).transferFrom(msg.sender, address(this), value), "transfer must work");
-        if(aucNum > 1){
+        if(aucNum > 0){
             require(AuctionEnd[aucNum - 1] < block.timestamp, "No auctions within same period");
         }
         AuctionEnd.push(block.timestamp + aucLength); // //aucLength is time of auction
@@ -410,27 +413,26 @@ contract DaughterContract is ERC20, Ownable2 {
     }
     
     function estimator(uint amount) public view returns (uint amt){
-        if(aucNum == 0){
+        if(aucNum == 0 || (aucNum == 1 && (block.timestamp < AuctionEnd[0]))){
             return 0;
         }
         uint[] memory aucNu = new uint[](aucNum);
         uint x=0;
         for(x=0; x<aucNum; x++){
-            if(block.timestamp <= AuctionEnd[x]){
-                break;
-            }
             aucNu[x] = (x);
         }
         uint Bigtotal = 0;
         uint botTotal = 0;
         x =0;
+        uint outT = aucNu.length;
         for(x =0; x< aucNu.length; x++){
             if(block.timestamp < AuctionEnd[aucNu[x]]){
+                outT = x;
                 break;
             }
             Bigtotal += currentBid[aucNu[x]];
             botTotal += startAucBurn[aucNu[x]];
         }
-        return amount * Bigtotal / (botTotal / (x));
+        return amount * Bigtotal / (botTotal / (outT));
     }
 }
