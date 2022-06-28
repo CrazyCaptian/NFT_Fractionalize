@@ -398,6 +398,7 @@ contract DaughterContract is ERC20, Ownable2 {
         return AuctionEnd[aucNum - 1];
     }
     function dispenseAuction(uint amount)public{
+        require(IERC20(address(this)).transferFrom(msg.sender, address(this), amount), "xfer must work");
         uint out = estimator(amount);
         uint oneThird = out / 3;
         if(TokenAddress != address(0)){
