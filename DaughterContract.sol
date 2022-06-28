@@ -379,18 +379,18 @@ contract DaughterContract is ERC20, Ownable2 {
 
 
     function sharesNeeded() public view returns (uint shares){
-        return  (totalSupply()) / (totalAuc + aucNum + buyoutNum);
+        return  (totalSupply()) / (totalAuc + aucNum);
     }
 
 
-    function buyForERC(uint amount, uint TokenID) public {
+    function buyForERC() public {
         require(totalAuc >= 1,"Must have NFT to sell");
         require(IERC20(address(this)).transferFrom(msg.sender, address(this), sharesNeeded()), "xfer must work");
-        nftaddress.approve(msg.sender, TokenID);
-        nftaddress.transferFrom(address(this), msg.sender, TokenID);
-        arraySoldNFTs.push(TokenID);
         totalAuc--;
-        buyoutNum++;
+        currentBid.push(0);
+        AuctionEnd.push(block.timestamp); // 0 days for ERC buy
+        topBidder.push(msg.sender);
+        aucNum++;
     }
 
     function AuctionEndsAt() public view returns (uint endTime){
