@@ -384,12 +384,16 @@ contract DaughterContract is ERC20, Ownable2 {
 
 
     function buyForERC() public {
+        if(aucNum > 0){
+            require(AuctionEnd[aucNum - 1] < block.timestamp, "Must wait until auctions are over to claim");
+        }
         require(totalAuc >= 1,"Must have NFT to sell");
         require(IERC20(address(this)).transferFrom(msg.sender, address(this), sharesNeeded()), "xfer must work");
         totalAuc--;
         currentBid.push(0);
         AuctionEnd.push(block.timestamp); // 0 days for ERC buy
         topBidder.push(msg.sender);
+        startAucBurn.push(totalSupply() - IERC20(address(this)).balanceOf(address(this)));
         aucNum++;
     }
 
