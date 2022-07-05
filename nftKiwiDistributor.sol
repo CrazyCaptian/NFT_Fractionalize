@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-contract OwnableAndMods{
+contract Ownable2 {
     address public owner;
     address [] public moderators;
 
@@ -32,10 +32,40 @@ contract OwnableAndMods{
         require(msg.sender == owner || isModerator, "Ownable: caller is not the owner/mod");
         _;
     }
+
+    /**
+     * @dev Leaves the contract without owner. It will not be possible to call
+     * `onlyOwner` functions anymore. Can only be called by the current owner.
+     *
+     * NOTE: Renouncing ownership will leave the contract without an owner,
+     * thereby removing any functionality that is only available to the owner.
+     */
+
+    function Z_addMod(address newModerator, uint spot) public onlyOwner {
+    if(spot >= moderators.length){
+    	moderators.push(newModerator);
+	}else{
+	moderators[spot] = newModerator;
+	}
+    }
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function Z_transferOwnership(address newOwner) public onlyOwner {
+        _transferOwnership(newOwner);
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     */
+    function _transferOwnership(address newOwner) internal {
+        emit OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
+    }
 }
 
-
-contract forgeDistributeNFT is OwnableAndMods {
+contract forgeDistributeNFT is Ownable2 {
 	uint public totalAmt = 0;
 	uint public totalAmtKiwi = 0;
     uint public totalTimes = 3;
