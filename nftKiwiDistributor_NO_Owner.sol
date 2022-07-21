@@ -76,7 +76,7 @@ contract ForgeDistributorContract {
     function depositKiwi(uint256 _amount) external {{
 	require(totalAmtKiwi < _amount,"Only if you add more");
         ERC20(kiwiContract).transferFrom(msg.sender, address(this), _amount);
-        totalAmtKiwi = ERC20(KiwiContract).balanceOf(Address(this))
+        totalAmtKiwi = ERC20(KiwiContract).balanceOf(Address(this));
 	KiwiPer = totalAmtKiwi / totalMax;
         
 	// transfer the token from address of this contract
