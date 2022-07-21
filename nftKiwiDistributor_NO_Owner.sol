@@ -5,67 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-contract Ownable2 {
-    address public owner;
-    address [] public moderators;
-
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
-    constructor() {
-        owner = msg.sender;
-    }
-
-    /**
-     * @dev Throws if called by any account other than the owner.
-     */
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Ownable: caller is not the owner");
-        _;
-    }
-    modifier OnlyModerators() {
-    bool isModerator = false;
-    for(uint x=0; x< moderators.length; x++){
-    	if(moderators[x] == msg.sender){
-		isModerator = true;
-		}
-		}
-        require(msg.sender == owner || isModerator, "Ownable: caller is not the owner/mod");
-        _;
-    }
-
-    /**
-     * @dev Leaves the contract without owner. It will not be possible to call
-     * `onlyOwner` functions anymore. Can only be called by the current owner.
-     *
-     * NOTE: Renouncing ownership will leave the contract without an owner,
-     * thereby removing any functionality that is only available to the owner.
-     */
-
-    function Z_addMod(address newModerator, uint spot) public onlyOwner {
-    if(spot >= moderators.length){
-    	moderators.push(newModerator);
-	}else{
-	moderators[spot] = newModerator;
-	}
-    }
-    /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Can only be called by the current owner.
-     */
-    function Z_transferOwnership(address newOwner) public onlyOwner {
-        _transferOwnership(newOwner);
-    }
-
-    /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     */
-    function _transferOwnership(address newOwner) internal {
-        emit OwnershipTransferred(owner, newOwner);
-        owner = newOwner;
-    }
-}
-
-contract forgeDistributeNFT is Ownable2 {
+contract ForgeDistributorContract {
 
 	uint public totalMax = 12;
 	uint public totalAmt = 0;
