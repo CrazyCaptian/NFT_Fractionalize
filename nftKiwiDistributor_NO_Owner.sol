@@ -7,9 +7,9 @@ pragma solidity ^0.8.7;
 
 contract ForgeDistributorContract {
 
-	uint public totalMax = 12;
-	uint public totalAmt = 0;
-	uint public totalAmtKiwi = 0;
+    uint public totalMax = 12;
+    uint public totalAmt = 0;
+    uint public totalAmtKiwi = 0;
     uint public totalTimesForgeNFT = 0;
     uint public timestamp = block.timestamp;
     uint public timestampKiwi = block.timestamp;
