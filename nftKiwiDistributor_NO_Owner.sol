@@ -73,7 +73,7 @@ contract forgeDistributeNFT is Ownable2 {
     uint public totalTimesForge = 0;
     uint public timestamp = block.timestamp;
     uint public timestampKiwi = block.timestamp;
-    uint public length = 60 * 10;
+    uint public length = 60 * 5;
     uint public ForgePer = 0;
     uint public KiwiPer = 0;
     address public forgeContract = 0xF44fB43066F7ECC91058E3A614Fb8A15A2735276;
