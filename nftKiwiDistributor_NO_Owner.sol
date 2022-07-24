@@ -14,7 +14,7 @@ contract ForgeDistributorContract {
     uint public totalTimesKiwi = 0;
     uint public timestamp = block.timestamp;
     uint public timestampKiwi = block.timestamp;
-    uint public length = 60 * 5;
+    uint public length = 60 * 5; //mainnet do 60 * 60 * 24 * 31 * 2 for 2 months
     uint public ForgeNFTPer = 0;
     uint public KiwiPer = 0;
     address public forgeContract = 0xbF4493415fD1E79DcDa8cD0cAd7E5Ed65DCe7074;
@@ -35,7 +35,7 @@ contract ForgeDistributorContract {
 	}
 		
     function mintKiwi() public {
-        require(timestampKiwi < block.timestamp, "Timestamp must be less than current block");
+        require(timestampKiwi < block.timestamp, "timestampKiwi must be less than current block");
 	    require(totalTimesKiwi<totalMax, "Deposit to continue");
 	    timestampKiwi = block.timestamp + length;
 	    totalTimesKiwi = totalTimesKiwi + 1;
@@ -47,7 +47,7 @@ contract ForgeDistributorContract {
     
     
     function mintNFTShares() public {
-        require(timestamp < block.timestamp, "Timestamp must be less than current block");
+        require(timestamp < block.timestamp, "timestamp must be less than current block");
 	    require(totalTimesForgeNFT<totalMax, "Deposit to continue");
         timestamp = block.timestamp + length;
         totalTimesForgeNFT = totalTimesForgeNFT + 1;
