@@ -324,7 +324,7 @@ contract DaughterContract is ERC20, Ownable2 {
     function bidERC20(address bidForWhom, uint value) public  virtual returns (bool success) {
 
         require(block.timestamp <= AuctionEnd[aucNum - 1], "Must bid before auction ends");
-        require(value > currentBid[aucNum -1], "Must bid more than reserve price");
+        require(value >= (currentBid[aucNum -1] + currentBid[aucNum - 1] /15), "Must bid more than 110% of current bid");
         require(ERC20(TokenAddress).transferFrom(msg.sender, address(this), value), "transfer must work");
         require(ERC20(TokenAddress).transfer(topBidder[aucNum -1 ], currentBid[aucNum -1]), "Must xfer back topBid");
         currentBid[aucNum - 1] = value;
@@ -337,7 +337,7 @@ contract DaughterContract is ERC20, Ownable2 {
     function bid(address bidForWhom) public payable  virtual returns (bool success) {
 
         require(block.timestamp <= AuctionEnd[aucNum], "Must bid before auction ends");
-        require(msg.value > currentBid[aucNum], "Must bid more than reserve price");
+        require(msg.value >= (currentBid[aucNum -1] + currentBid[aucNum - 1] /15), "Must bid more than 110% of current bid");
         address payable receive21r = payable(topBidder[aucNum]);
         receive21r.transfer(currentBid[aucNum]);
         currentBid[aucNum] = msg.value;
