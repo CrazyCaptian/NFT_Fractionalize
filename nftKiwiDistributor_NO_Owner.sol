@@ -62,7 +62,7 @@ contract ForgeDistributorContract {
     
     function deposit(uint256 _amount) public {
 	    require(totalAmt < _amount,"Only if you add more");
-        ERC20(NFTFractionalizedContract).transferFrom(msg.sender, forgeContract, _amount);
+        ERC20(NFTFractionalizedContract).transferFrom(msg.sender, address(this), _amount);
         totalAmt = ( ERC20(NFTFractionalizedContract).balanceOf(address(this)) / totalMax) * totalMax;
 	    ForgeNFTPer = ERC20(NFTFractionalizedContract).balanceOf(address(this)) / totalMax;
         timestamp = block.timestamp;
