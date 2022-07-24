@@ -375,16 +375,16 @@ pragma solidity ^0.4.24;
 
 	contract ForgeTokenNFT is ERC721Token, Ownable {
 
-    constructor() ERC721Token("ForgeTokenNFT", "FgeNFT") public {
+    constructor() ERC721Token("ForgeTokenNFT2", "FgeNFT2") public {
         addGithub("000.png"); // easy management of tokenIDs and edits 1=1
-		for(int x=0; x<32; x++){
+		for(int x=0; x<58; x++){
 			mintToken("0");
 		}
     }
 
     // CONSTANTS
     address client;
-    uint256 max_supply = 100;
+    uint256 max_supply = 58;
     string baseurl = "https://forgetoken.org/api/forge/Forge-Images/";
 
     struct GithubAddress {
