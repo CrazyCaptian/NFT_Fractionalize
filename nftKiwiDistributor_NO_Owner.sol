@@ -11,14 +11,15 @@ contract ForgeDistributorContract {
     uint public totalAmt = 0;
     uint public totalAmtKiwi = 0;
     uint public totalTimesForgeNFT = 0;
+    uint public totalTimesKiwi = 0;
     uint public timestamp = block.timestamp;
     uint public timestampKiwi = block.timestamp;
     uint public length = 60 * 5;
     uint public ForgeNFTPer = 0;
     uint public KiwiPer = 0;
-    address public forgeContract = 0xF44fB43066F7ECC91058E3A614Fb8A15A2735276;
-    address public kiwiContract = 0xF44fB43066F7ECC91058E3A614Fb8A15A2735276;
-    address public NFTFractionalizedContract  = 0xF44fB43066F7ECC91058E3A614Fb8A15A2735276;
+    address public forgeContract = 0xbF4493415fD1E79DcDa8cD0cAd7E5Ed65DCe7074;
+    address public kiwiContract = 0xbF4493415fD1E79DcDa8cD0cAd7E5Ed65DCe7074;
+    address public NFTFractionalizedContract  = 0x9265858344c8e0b3754Fc60B42DCF3ddd61fb8F9;
     
     
     constructor() public {
@@ -27,31 +28,31 @@ contract ForgeDistributorContract {
     
     
     function mintTWO() external{
-         require(timestamp < block.timestamp && timestampKiwi < block.timestamp, "Timestamp must be less than current block");
-	mintForge();
-	mintKiwi();
+        require(timestamp < block.timestamp && timestampKiwi < block.timestamp, "Timestamp must be less than current block");
+	    mintNFTShares();
+    	mintKiwi();
 	
 	}
 		
-    function mintKiwi() external {
+    function mintKiwi() public {
         require(timestampKiwi < block.timestamp, "Timestamp must be less than current block");
-	require(totalTimesForge<totalMax, "Deposit to continue"){
-	timestampKiwi = block.timestamp + length;
-	totalTimesKiwi = totalTimes + 1;
-        ERC20(kiwicontract).transfer(forgecontract, KiwiPer);
-	totalAmtKiwi = totalAmtKiwi - KiwiPer;
+	    require(totalTimesKiwi<totalMax, "Deposit to continue");
+	    timestampKiwi = block.timestamp + length;
+	    totalTimesKiwi = totalTimesKiwi + 1;
+        ERC20(kiwiContract).transfer(forgeContract, KiwiPer);
+	    totalAmtKiwi = totalAmtKiwi - KiwiPer;
         // transfer the token from address of this contract
         // to address of the user (executing the withdrawToken() function)
     }
     
     
-    function mintNFTShares() external {
-       require(timestamp < block.timestamp, "Timestamp must be less than current block");
-	require(totalTimesForgeNFT<totalMax){
+    function mintNFTShares() public {
+        require(timestamp < block.timestamp, "Timestamp must be less than current block");
+	    require(totalTimesForgeNFT<totalMax, "Deposit to continue");
         timestamp = block.timestamp + length;
         totalTimesForgeNFT = totalTimesForgeNFT + 1;
-        ERC20(NFTFractionalizedContract).transfer(forgecontract, ForgeNFTPer);
-        ERC20(kiwicontract).transfer(forgecontract, ForgeNFTPer);
+        ERC20(NFTFractionalizedContract).transfer(forgeContract, ForgeNFTPer);
+        ERC20(kiwiContract).transfer(forgeContract, ForgeNFTPer);
     	totalAmt = totalAmt - ForgeNFTPer;
 	
         // transfer the token from address of this contract
@@ -60,11 +61,11 @@ contract ForgeDistributorContract {
     }    
     
     
-    function deposit(uint256 _amount) external {
-	require(totalAMT < _amount,"Only if you add more");
-        ERC20(NFTFractionalizedContract).transferFrom(msg.sender, forgecontract, _amount);
-        totalAmt = ERC20(NFTFractionalizedContract).balanceOf(Address(this))
-	ForgeNFTPer = ERC20(NFTFractionalizedContract).balanceOf(Address(this)) / totalMax;
+    function deposit(uint256 _amount) public {
+	    require(totalAmt < _amount,"Only if you add more");
+        ERC20(NFTFractionalizedContract).transferFrom(msg.sender, forgeContract, _amount);
+        totalAmt = ( ERC20(NFTFractionalizedContract).balanceOf(address(this)) / totalMax) * totalMax;
+	    ForgeNFTPer = ERC20(NFTFractionalizedContract).balanceOf(address(this)) / totalMax;
 	
         // transfer the token from address of this contract
         // to address of the user (executing the withdrawToken() function)
@@ -73,11 +74,11 @@ contract ForgeDistributorContract {
     }    
     
     
-    function depositKiwi(uint256 _amount) external {{
-	require(totalAmtKiwi < _amount,"Only if you add more");
+    function depositKiwi(uint256 _amount) public {
+	    require(totalAmtKiwi < _amount,"Only if you add more");
         ERC20(kiwiContract).transferFrom(msg.sender, address(this), _amount);
-        totalAmtKiwi = ERC20(KiwiContract).balanceOf(Address(this));
-	KiwiPer = totalAmtKiwi / totalMax;
+        totalAmtKiwi = (ERC20(kiwiContract).balanceOf(address(this)) / totalMax) * totalMax;
+	    KiwiPer = totalAmtKiwi / totalMax;
         
 	// transfer the token from address of this contract
         // to address of the user (executing the withdrawToken() function)
