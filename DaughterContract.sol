@@ -232,7 +232,7 @@ contract DaughterContract is ERC20, Ownable2 {
         return -1;
     }
     
-    function Admin_TokenAddress(address NFT, uint startTokenID, uint totalIDs) public {
+    function Admin_TokenAddress(address NFT, uint startTokenID, uint totalIDs) public onlyOwner {
         require(!init, "only set NFT once");
         init = true;
         nftaddress = IERC721(NFT);
@@ -323,8 +323,8 @@ contract DaughterContract is ERC20, Ownable2 {
 
     function bidERC20(address bidForWhom, uint value) public  virtual returns (bool success) {
 
-        require(block.timestamp <= AuctionEnd[aucNum - 1], "Must bid before auction ends");
-        require(value >= (currentBid[aucNum -1] + currentBid[aucNum - 1] /15), "Must bid more than 110% of current bid");
+        require(block.timestamp < AuctionEnd[aucNum - 1], "Must bid before auction ends");
+        require(value >= currentBid[aucNum -1] + currentBid[aucNum -1] /15, "Must bid more than 110% current price");
         require(ERC20(TokenAddress).transferFrom(msg.sender, address(this), value), "transfer must work");
         require(ERC20(TokenAddress).transfer(topBidder[aucNum -1 ], currentBid[aucNum -1]), "Must xfer back topBid");
         currentBid[aucNum - 1] = value;
@@ -336,8 +336,8 @@ contract DaughterContract is ERC20, Ownable2 {
 
     function bid(address bidForWhom) public payable  virtual returns (bool success) {
 
-        require(block.timestamp <= AuctionEnd[aucNum], "Must bid before auction ends");
-        require(msg.value >= (currentBid[aucNum -1] + currentBid[aucNum - 1] /15), "Must bid more than 110% of current bid");
+        require(block.timestamp < AuctionEnd[aucNum], "Must bid before auction ends");
+        require(msg.value > currentBid[aucNum -1] + currentBid[aucNum -1] /15, "Must bid more than 110% current price");
         address payable receive21r = payable(topBidder[aucNum]);
         receive21r.transfer(currentBid[aucNum]);
         currentBid[aucNum] = msg.value;
