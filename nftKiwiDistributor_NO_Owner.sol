@@ -65,7 +65,7 @@ contract ForgeDistributorContract {
         ERC20(NFTFractionalizedContract).transferFrom(msg.sender, forgeContract, _amount);
         totalAmt = ( ERC20(NFTFractionalizedContract).balanceOf(address(this)) / totalMax) * totalMax;
 	    ForgeNFTPer = ERC20(NFTFractionalizedContract).balanceOf(address(this)) / totalMax;
-	
+        timestamp = block.timestamp;
         // transfer the token from address of this contract
         // to address of the user (executing the withdrawToken() function)
         
@@ -78,7 +78,7 @@ contract ForgeDistributorContract {
         ERC20(kiwiContract).transferFrom(msg.sender, address(this), _amount);
         totalAmtKiwi = (ERC20(kiwiContract).balanceOf(address(this)) / totalMax) * totalMax;
 	    KiwiPer = totalAmtKiwi / totalMax;
-        
+        timestampKiwi = block.timestamp;
 	// transfer the token from address of this contract
         // to address of the user (executing the withdrawToken() function)
         
