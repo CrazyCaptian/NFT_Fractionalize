@@ -52,7 +52,6 @@ contract ForgeDistributorContract {
         timestamp = block.timestamp + length;
         totalTimesForgeNFT = totalTimesForgeNFT + 1;
         ERC20(NFTFractionalizedContract).transfer(forgeContract, ForgeNFTPer);
-        ERC20(kiwiContract).transfer(forgeContract, ForgeNFTPer);
     	totalAmt = totalAmt - ForgeNFTPer;
 	
         // transfer the token from address of this contract
