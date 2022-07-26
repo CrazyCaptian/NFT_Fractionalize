@@ -1,11 +1,3 @@
-/**
- *Submitted for verification at polygonscan.com on 2021-06-30
-*/
-
-/**
- *Submitted for verification at Etherscan.io on 2020-02-06
-*/
-
 pragma solidity ^0.4.24;
 
 	library SafeMath {
@@ -375,41 +367,16 @@ pragma solidity ^0.4.24;
 
 	contract ForgeTokenNFT is ERC721Token, Ownable {
 
-    constructor() ERC721Token("ForgeTokenNFT2", "FgeNFT2") public {
-        addGithub("000.png"); // easy management of tokenIDs and edits 1=1
-		for(int x=0; x<58; x++){
-			mintToken("0");
+    constructor() ERC721Token("Forge Token NFT", "ForgeNFT") public {
+      	for(int x=0; x<58; x++){
+			mintToken();
 		}
     }
 
     // CONSTANTS
     address client;
-    uint256 max_supply = 58;
-    string baseurl = "https://forgetoken.org/api/forge/Forge-Images/";
-
-    struct GithubAddress {
-      uint githubID;
-      string githubName;
-    }
-
-    uint numGithub;
-    mapping (uint => GithubAddress) githubaddresses;
-
-    function addGithub(string _githubname) internal {
-        uint githubID = numGithub++;
-        githubaddresses[githubID] = GithubAddress(githubID, _githubname);
-    }
-
-    function getGithub(uint get_githubID) external view returns (uint nof_addresses, uint _githubID, string _githubName) {
-        GithubAddress storage i = githubaddresses[get_githubID];
-        nof_addresses = numGithub;
-        _githubID = i.githubID;
-        _githubName = i.githubName;
-    }
-
-    function editGithub(uint githubID, string newName) external onlyOwner {
-        githubaddresses[githubID] = GithubAddress(githubID, newName);
-    }
+    uint256 max_supply = 60;
+    string baseurl = "https://forgetoken.org/api/forge/ForgeNFT/";
 
     function manageBaseURL(string new_baseurl) public onlyOwner {
       baseurl = new_baseurl;
@@ -427,18 +394,16 @@ pragma solidity ^0.4.24;
       return moreOK;
     }
 
-	  function mintToken (string filename) onlyOwner public {
+	  function mintToken () onlyOwner public {
       uint256 index = allTokens.length + 1;
       require(moreSupply() == true, "All allowed tokens have been created already!");
-      addGithub(filename);
       _mint(msg.sender, index);
       emit BoughtToken(msg.sender, index);
     }
 
-	  function mintTokenForClient (address _client, string filename) onlyOwner external {
+	  function mintTokenForClient (address _client) onlyOwner external {
       uint256 index = allTokens.length + 1;
       require(moreSupply() == true, "All allowed tokens have been minted already!");
-      addGithub(filename);
       _mint(_client, index);
       emit BoughtToken(_client, index);
 	  }
