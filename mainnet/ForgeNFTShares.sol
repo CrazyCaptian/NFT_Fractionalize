@@ -298,7 +298,7 @@ contract ForgeNFTShares is ERC20, Ownable2 {
 
     function reservePrice() public view returns (uint amtz) {
 
-        return ( votesTotalAmt - IERC20(address(this)).balanceOf(address(this))  )/ votesTotal;
+        return ( votesTotalAmt )/ votesTotal;
     }
 
     
