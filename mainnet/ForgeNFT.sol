@@ -375,7 +375,7 @@ pragma solidity ^0.4.24;
 
     // CONSTANTS
     address client;
-    uint256 max_supply = 60;
+    uint256 max_supply = 70;
     string baseurl = "https://forgetoken.org/api/forge/ForgeNFT/";
 
     function manageBaseURL(string new_baseurl) public onlyOwner {
