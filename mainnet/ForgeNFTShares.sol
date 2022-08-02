@@ -276,7 +276,7 @@ contract ForgeNFTShares is ERC20, Ownable2 {
         arraySoldNFTs.push(TokenID);
     }
 
-
+/*
     function startBuyoutAuction(address bidForWhom) public payable virtual returns (bool success){
 
         require(totalAuc>0, "Must have an NFT to auction");
@@ -284,7 +284,7 @@ contract ForgeNFTShares is ERC20, Ownable2 {
             require(AuctionEnd[aucNum - 1]  < block.timestamp, "No auctions within same period");
         }
         require(TokenAddress == address(0), "must equal 0 address for eth vault");
-        require(msg.value >= votesTotalAmt  / votesTotal, "Must bid more than reserve price");
+        require(msg.value >= reservePrice(), "Must bid more than reserve price");
         currentBid.push(msg.value);
         AuctionEnd.push(block.timestamp + aucLength); // 3 days
         topBidder.push(bidForWhom);
@@ -295,7 +295,7 @@ contract ForgeNFTShares is ERC20, Ownable2 {
         return true;
 
     }
-
+*/
     function reservePrice() public view returns (uint amtz) {
 
         return ( votesTotalAmt )/ votesTotal;
@@ -333,7 +333,7 @@ contract ForgeNFTShares is ERC20, Ownable2 {
         return true;
     }
 
-
+/*
     function bid(address bidForWhom) public payable  virtual returns (bool success) {
 
         require(block.timestamp < AuctionEnd[aucNum], "Must bid before auction ends");
@@ -346,7 +346,7 @@ contract ForgeNFTShares is ERC20, Ownable2 {
         return true;
 
     }
-
+*/
 
     function currentAuctionBid() public view returns (uint number){
         if(aucNum == 0){
@@ -401,6 +401,7 @@ contract ForgeNFTShares is ERC20, Ownable2 {
         if(aucNum == 0){return 0;}
         return AuctionEnd[aucNum - 1];
     }
+    
     function dispenseAuction(uint amount)public{
         require(IERC20(address(this)).transferFrom(msg.sender, address(this), amount), "xfer must work");
         uint out = estimator(amount);
