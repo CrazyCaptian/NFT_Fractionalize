@@ -205,7 +205,7 @@ contract ForgeNFTShares is ERC20, Ownable2 {
     uint [] public currentBid;
     address [] public topBidder;
     address public TokenAddress = address(0xbF4493415fD1E79DcDa8cD0cAd7E5Ed65DCe7074);
-    uint public aucLength = 650;
+    uint public aucLength = 60 * 60 * 24 * 5;
     address public TokenAboveAddress;
     uint public totalAuc = 0;
     uint public aucNum = 0;
